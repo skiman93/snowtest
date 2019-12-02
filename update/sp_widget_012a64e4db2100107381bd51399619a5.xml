@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[function($timeout, $location, $scope) {
+    /* widget controller */
+    var c = this;
+    //console.log("I have started");
+    var boxChecked = c.box;
+    var rName = c.real_name;
+    c.onLoad = function() {
+        c.data.rName = "Test";
+
+    }
+
+    console.log(rName);
+
+    c.toggle = function() {
+        alert("I am toggled. That's my " + c.box);
+        c.data.real_name = "test";
+    }
+
+
+    c.submitForm = function(isValid) {
+        //console.log("You clicked submit");
+        isValid = true;
+
+        var sName = c.super_name;
+        var rName = c.real_name;
+        var universe = c.universe;
+        var home = c.home;
+        var box = c.box;
+
+
+        if (!sName || !rName || !universe || !home) {
+            isValid = false;
+            console.log('Fill in all fields');
+        }
+
+        c.submitted = true;
+
+        if (!isValid) {
+            //console.log("Not valid");
+            return;
+        }
+
+        c.data.super_name = c.super_name;
+        c.data.real_name = c.real_name;
+        c.data.universe = c.universe;
+        c.data.home = c.home;
+        c.data.box = c.box;
+
+
+
+        //console.log("i am about to update");
+
+        c.server.update().then(function(response) {
+            if (response.status == 'success') {
+                c.message = null;
+                c.success = response.message;
+
+                $timeout(function() {
+                    $location.search({
+                        id: 'superheroes'
+                    });
+                }, 5000);
+            } else if (response.status == 'error') {
+                c.message = response.message;
+            }
+        });
+    };
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css/>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>true</has_preview>
+        <id>super_widget</id>
+        <internal>false</internal>
+        <link><![CDATA[function link(scope, element, attrs, controller) {  }]]></link>
+        <name>Super widget</name>
+        <option_schema/>
+        <public>true</public>
+        <roles/>
+        <script><![CDATA[(function() {
+    /* populate the 'data' object */
+    /* e.g., data.table = $sp.getValue('table'); */
+
+    if (input) {
+		data.status = "";    // Resets status if not null
+		data.message = "";   // Resets message if not null
+		
+        var gr = new GlideRecord("x_412202_hello_wor_superhero");
+        gr.initialize();
+
+        var sName = input.super_name;
+        var rName = input.real_name;
+        var universe = input.universe;
+        var home = input.home;
+		var box = input.box;
+		
+        if (recordExists(sName)) {
+            data.status = "error";
+            data.message = "record exists";
+            return false;
+        }
+		
+        if (validNames(sName, rName, universe, home)) {
+            gr.setValue('super_name', input.super_name);
+            gr.setValue('real_name', input.real_name);
+            gr.setValue('universe', input.universe.toUpperCase());
+            gr.setValue('home', input.home);
+
+            var newSuperSysID = gr.insert();
+        } else {
+            //data.status = "error";
+            //data.message = "Please only enter letters";
+            return false;
+        }
+
+        if (!gs.nil(newSuperSysID)) {
+            data.status = "success";
+            data.message = "You have successfully made a submition";
+        } else {
+            data.status = "error";
+            data.message = "You done goofed";
+        }
+
+
+    }
+
+    function validNames(s, r, u, h) {
+        var sRegex = /^[A-Za-z ]+$/.test(s);
+        var rRegex = /^[A-Za-z ]+$/.test(r);
+        var hRegex = /^[A-Za-z ]+$/.test(h);
+		var uRegex = /^[A-Za-z ]+$/.test(u);
+		//gs.info("uRegex: " + uRegex);
+        var uLower = u.toLowerCase();
+
+        if (!sRegex || !rRegex || !hRegex || !uRegex) {
+			data.status = "error";
+            data.message = "Please only enter letters";
+			return false;
+        }
+		
+		if ((uLower != "dc") && (uLower != "marvel")){
+			data.status = "error";
+			data.message = "Please enter DC or Marvel for universe";
+			//gs.info("Universe: " + uLower);
+			return false;
+		}
+		
+		return true;
+
+    }
+
+    function recordExists(name) {
+        gs.info("record exists function");
+        var gr = new GlideRecord("x_412202_hello_wor_superhero");
+        gr.addQuery("super_name", name);
+        gr.query();
+        //gs.info(gr.hasNext());
+        return gr.hasNext();
+
+    }
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-12-02 16:53:42</sys_created_on>
+        <sys_id>012a64e4db2100107381bd51399619a5</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Super widget</sys_name>
+        <sys_package display_value="Super App" source="x_412202_super_app">0b99a8e0db2100107381bd51399619bf</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Super App">0b99a8e0db2100107381bd51399619bf</sys_scope>
+        <sys_update_name>sp_widget_012a64e4db2100107381bd51399619a5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-12-02 16:53:42</sys_updated_on>
+        <template><![CDATA[<div>
+<!-- your widget template -->
+<form name="superhero_register" class="form-horizontal" novalidate ng-submit="c.submitForm();">
+<fieldset>
+
+<!-- Form Name -->
+<legend>Superhero Registration</legend>
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="real_name">Real Name</label>  
+  <div class="col-md-4">
+  <input ng-model="c.real_name" id="real_name" name="real_name" type="text" placeholder="" class="form-control input-md">
+    
+  </div>
+</div>
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="super_name">Super Name</label>  
+  <div class="col-md-4">
+  <input ng-model="c.super_name" id="super_name" name="super_name" type="text" placeholder="" class="form-control input-md">
+    
+  </div>
+</div>
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="univerise">Universe</label>  
+  <div class="col-md-4">
+  <input ng-model="c.universe" id="univerise" name="univerise" type="text" placeholder="" class="form-control input-md">
+    
+  </div>
+</div>
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="home">Home</label>  
+  <div class="col-md-4">
+  <input ng-model="c.home" id="home" name="home" type="text" placeholder="" class="form-control input-md">
+    
+  </div>
+</div>
+  
+
+<div class="form-group">
+  <label class="col-md-4 control-label" for="checkbox">Test Form: </label>
+  <div class="col-md-4">
+  <div class="checkbox">
+    <label for="checkbox-0">
+      <input ng-change="c.toggle()" ng-model="c.box" type="checkbox" name="checkbox" id="checkbox-0" value="test_box">
+      True
+    </label>
+	</div>
+  </div>
+</div>
+
+<!-- Button -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="button"></label>
+  <div class="col-md-4">
+    <button id="button" name="button" class="btn btn-primary" type="submit">Submit</button>
+  </div>
+</div>
+
+</fieldset>
+  <div ng-if="c.message" id="errorMessage" class="alert alert-danger" role="alert">{{c.message}}</div>
+  <div ng-if="c.success" id="successMessage" class="alert alert-success" role="alert">{{c.success}}</div>
+</form>
+
+</div>]]></template>
+    </sp_widget>
+</record_update>
